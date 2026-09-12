@@ -1,12 +1,10 @@
 const { orders } = require('../data');
+const { AppError } = require('../errors');
 
 function findOrder(id) {
   const order = orders[id];
   if (!order) {
-    // Throws a raw Error with an internal-sounding message. If this
-    // isn't caught, Express's default handler sends the message and
-    // stack trace straight to the client.
-    throw new Error(`Order ${id} not found in in-memory store`);
+    throw new AppError(404, 'ORDER_NOT_FOUND', 'Order not found');
   }
   return order;
 }
@@ -18,9 +16,7 @@ function getOrder(req, res) {
 
 function createOrder(req, res) {
   if (!req.body || !req.body.item) {
-    // A different failure style: caught, but with a generic,
-    // uninformative error shape.
-    return res.status(400).json({ error: 'failed' });
+    throw new AppError(400, 'VALIDATION_ERROR', 'Field "item" is required');
   }
   const id = Object.keys(orders).length + 1;
   orders[id] = { id, item: req.body.item, quantity: req.body.quantity || 1 };
